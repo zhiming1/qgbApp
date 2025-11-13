@@ -1,0 +1,64 @@
+version: "3.8"
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: qgb-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./qgb-admin:/var/www/html
+    depends_on:
+      - php
+    networks:
+      - qgb-net
+
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: qgb-php
+    volumes:
+      - ./qgb-admin:/var/www/html
+    networks:
+      - qgb-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: qgb-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - ./data/redis:/data
+    networks:
+      - qgb-net
+
+  mysql:
+    image: mysql:8.0
+    container_name: qgb-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: qgb_app
+      MYSQL_USER: qgb
+      MYSQL_PASSWORD: qgb123456
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    networks:
+      - qgb-net
+
+  mongo:
+    image: mongo:6.0
+    container_name: qgb-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/mongo:/data/db
+    networks:
+      - qgb-net
+
+networks:
+  qgb-net:
+    driver: bridge
