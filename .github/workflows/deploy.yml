@@ -1,0 +1,25 @@
+name: Deploy to qgbApp server
+
+on:
+  push:
+    branches: ["master"] 
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'  # 如果用 master，这里改成 refs/heads/master
+
+    steps:
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        
+EOF
